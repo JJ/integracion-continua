@@ -194,13 +194,42 @@ script: "cd Text-Hoborg; perl Makefile.PL && make test"</code></pre>
 
         <section>
           <h1>CI en 2021: Una forma de vida</h1>
-          <img src='https://i.imgflip.com/1mskui.jpg' alt='Does not
-               simply add CI to a project'>
+          <img src='https://i.imgflip.com/1mskui.jpg' alt='Does not  simply add CI to a project'>
         </section>
         <!-- En la práctica -->
 
-        <section> <!-- tests modernos -->
-          <section>
+	<section><!-- Makefiles 2021 -->
+	  <section><h1><code>make</code> todavía está ahí</h1>
+	    <h2 class='fragment'>También <code>gulp</code>, <code>sbt</code> y otros integrados</h2>
+	    <pre><code data-line-numbers='2-4|5'>install:
+	zef install --deps-only .
+	pip install -r requirements.txt
+	bundle install
+        go get -d ./... </code></pre>
+	    <aside class='notes'>Con sus gestores de dependencias</aside>
+	  </section>
+
+	  <section>
+	  <pre><code data-line-numbers='2,6|3,7-15'>const gulp  = require('gulp');
+const mocha = require('gulp-mocha');
+const pm2   = require('pm2');
+var shell = require('gulp-shell');
+gulp.task('test', async () => {  gulp.src('test/test_*.js', {read: false})
+  .pipe(mocha({reporter: 'nyan'}))});
+gulp.task('start', async () => {
+  pm2.connect(true, async () => {
+    pm2.start({ name: 'Porra',
+      script: 'lib/index.js',
+      exec_mode: 'cluster',
+      instances: 4  }, async () => {
+      console.log('Arranca porra'); });
+ });
+});</code></pre>
+	</section>
+	</section>
+
+	<section><!-- tests modernos -->
+	  <section>
           <h1>Primero: los tests</h1>
           <pre><code data-line-numbers='1-4|5,8'>class StarletteTesting(TestCase):
     def __init__(self, *args, **kwargs):
@@ -221,8 +250,7 @@ script: "cd Text-Hoborg; perl Makefile.PL && make test"</code></pre>
             caso sobre Python. Las fases de setup y demás están más
             estandarizadas en algunos lenguajes, y los mocks son
             relativamente sencillos</aside>
-          </section>
-
+	  </section>
           <section><h1>Incluyendo mocks</h1>
             <pre><code data-line-numbers='1,10|3,6-7'>use Test;
 
@@ -241,7 +269,6 @@ done-testing;</code></pre>
               ambiente cloud de hoy</aside>
           </section>
 
-        </section>
 
 
         <section data-background='https://live.staticflickr.com/65535/50327948996_f2a87c2d28_k_d.jpg'><h1>Muchas gracias.</h1></section>
