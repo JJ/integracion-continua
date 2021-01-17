@@ -195,11 +195,52 @@ script: "cd Text-Hoborg; perl Makefile.PL && make test"</code></pre>
           <img src='https://i.imgflip.com/1mskui.jpg' alt='Does not
                simply add CI to a project'>
         </section>
+        <!-- En la práctica -->
 
-        <section><!-- En la práctica -->
+        <section>
+          <section>
           <h1>Primero: los tests</h1>
-        </section>
+          <pre><code data-line-numbers='1-4|5,8>class StarletteTesting(TestCase):
+    def __init__(self, *args, **kwargs):
+        super(StarletteTesting, self).__init__(*args, **kwargs)
+        self.client = TestClient(rutas)
+    async def test_should_be_able_to_create_one( self ):
+        response = self.client.put('/hitos/5.REST', data = { 'title' : 'Trabajando con REST',
+                                            'fecha' : '22/01/2021'} )
+        assert response.status_code == 201
+        data = await response.json()
+        for i in ['file','title','fecha']:
+            assert data[i] # More stuff here          </code></pre>
 
+          <aside class='notes'>Bueno, los tests siguen siendo tests,
+        pero los frameworks de hoy en día permiten hacer fácilmente
+        tests de integración, desacoplando las rutas del servidor web
+        y permitiendo hacer tests sobre funciones asíncronas, en este
+        caso sobre Python. Las fases de setup y demás están más
+        estandarizadas en algunos lenguajes, y los mocks son
+            relativamente sencillos</aside>
+          </section>
+
+          <section><h1>incluyendo mocks</h1>
+            <pre><code data-line-numbers='1,10|3,6-7'>use Test;
+
+use Project::Data::Mock;
+use Project::Stored;
+
+my $dator = Project::Data::Mock.new;
+my $stored = Project::Stored.new($dator);
+is($stored.milestones.keys.elems,1, "1 milestone from mock");
+
+done-testing;</code></pre>
+            <aside class='notes'>En este caso se usa Raku, y una clase
+            Mock hecha ex profeso, usando inyección de
+            dependencias. Inyección de dependencias/single source of
+            truth son conceptos que se usan de forma extensiva en el
+              ambiente cloud de hoy</aside>
+          </section>
+
+        </section>
+        
         <section><h1>DevOps es</h1>
           <h1 class='fragment'><strong>Infraestructura</strong> como código</h1>
           <h1 class='fragment'><strong>Configuración</strong> como
