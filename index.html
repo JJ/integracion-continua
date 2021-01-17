@@ -1,0 +1,323 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Integración continua en 2021</title>
+    
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/extra.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/qa-uni.css" id="theme">
+    
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css" id="highlight-theme">
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+	<section data-background='https://live.staticflickr.com/65535/50471435996_83a5174bc3_k_d.jpg'>
+          <h1>Integración continua en 2021</h1>
+          <h2>Construyendo, probando y desplegando tu código ahora mismo</h2>
+          <h3><code>@jjmerelo | github.com/JJ</code></h3>
+          <h2>Imágenes y texto <code>cc-by-sa</code></h2>
+        </section>
+
+        <section
+          data-background='https://live.staticflickr.com/65535/50517344412_701823b0ce_k_d.jpg'>
+          <h2>37 años programando</h2>
+          <h1 class='fragment'>33 en la UGR</h1>
+          <h2 class='fragment'>12 en GitHub</h2>
+        </section>
+
+        <section
+          data-background='https://live.staticflickr.com/65535/50517349887_b1e58f2fba_k_d.jpg'>
+          <h1>💘 Raku</h1>
+        </section>
+
+        <section data-background='https://live.staticflickr.com/4594/39108208441_ce36658fda_k_d.jpg'><h1>Integración/despliegue continuo == CI</h1>
+          <h2 class='fragment'>Pasar a producción cada vez que se
+            fusione en la rama principal</h2>
+          <aside class='notes'>Esto viene de la práctica de Extreme
+          programming, que aboga por pasar a producción varias veces
+          al día, con ciclos de desarrollos muy rápidos, y todo el
+            mundo trabajando sobre la rama principal</aside>
+        </section>
+
+        <section>
+        <section><h1>En la antigüedad se crearon las <em>build
+          tools</em></h1>
+          <img
+          src='https://pics.me.me/gccfooc-makefile-mgflip-com-how-a-gentleman-compiles-47295315.png'
+          alt='makefiles'>
+          <aside class='notes'><a
+            href='https://en.wikipedia.org/wiki/Make_(software)'>Make</a>
+            se creó en 1976</aside></section>
+
+        <section><h1>Los <code>Makefiles</code> tienen su propio
+          DSL</h1>
+          <pre><code data-line-numbers='1|3,5|6'>HTML = $(patsubst %.md,%.html,$(wildcard *.md))
+
+all: $(HTML)
+
+$(HTML): %.html: %.md
+	pandoc $< -o $@
+          </code></pre>
+          <aside class='notes'>En realidad esto es <code>gmake</code>,
+	    más nuevo y potente que el original <code>make</code>,
+	pero una herramienta muy interesante de todas formas y con
+	muchas posibilidades. make analiza un grafo de dependencias,
+	para realizar tareas de forma incremental y sólo las
+	    necesarias para llegar a los objetivos.</aside>
+        </section>
+        </section>
+
+          <section><h1>En el principio, fueron los <em>sistemas de
+          control de fuentes</em></h1>
+            <img
+          src='https://images.ctfassets.net/vtn4rfaw6n2j/image1_8png/7e335cfceeff5c805cdb7afb78acf304/image1_8.png?w=220&h=199&fit=pad&fm=webp&q=85'
+          alt='things other than git'>
+          <aside class='notes'>También de <a
+            href='https://en.wikipedia.org/wiki/Version_control#History'>Bell
+            labs</a>, y más o menos a la vez. Sacado de <a
+          href='https://www.cloudbees.com/blog/source-code-management-more-just-git'>
+            esta página</a></aside>
+          </section>
+          
+
+        <section data-background='https://live.staticflickr.com/58/193565159_35b223af23_o_d.jpg'>
+          <h1>Luego llegó la programación extrema</h1>
+          <aside class='notes'>Integración en producción y pasar a
+          producción rápidamente, peer programming, revisión de
+          código. Evita prácticas monolíticas y responde rápidamente a
+            las necesidades del cliente.</aside>
+        </section>
+
+        <section>
+          <section><h1>Y programación dirigida por test</h1>
+          <aside class='notes'>Iniciada en <a
+          href='https://en.wikipedia.org/wiki/Test-driven_development#cite_note-Quora2012May11-1'>2003</a>
+            por Kent Beck, extiende conceptos previos de programación
+            extrema.</aside>
+          <img
+          src='https://miro.medium.com/max/2400/1*9ZbCv6O3Sr7x6d3lt3uNRA.png'
+          alt='testing'>
+          <aside class='notes'>Sacado de <a href='https://medium.com/javascript-scene/tdd-changed-my-life-5af0ce099f80'>aquí</a></aside>
+          </section>
+
+          <section><h1>Testeando en Perl</h1>
+            <pre><code data-line-numbers='1,2|3,8-10'>use Test::More;
+BEGIN { plan tests => 6;
+    use_ok('Algorithm::Evolutionary::Individual::Bit_Vector');
+};
+
+my $length = 16;
+my $indi = new Algorithm::Evolutionary::Individual::Bit_Vector, { length => $length }; # Build random bitstring with length 10
+isa_ok( $indi, "Algorithm::Evolutionary::Individual::Bit_Vector" );
+ok( $indi->size() == $length, 'Created with length' );
+like( $indi->Atom( 7 ), qr/^\d$/, 'Bits set'); # ...
+            </code></pre>
+            <aside class='notes'>Este <a
+              href='https://github.com/JJ/Algorithm-Evolutionary/blob/eec6016a01ae3ea5190696a2e433cab74de56015/t/0100-bitvector.t'>test
+              en concreto es de 2008</a>, y muestra las característias
+              clásicas de los tests: planificación (6 tests), creación
+              de los objetos, aserciones de diferentes tipos</aside>
+          </section>
+        </section>
+
+        <section data-background='https://live.staticflickr.com/1847/42910394150_9fba8991af_k_d.jpg'><h1>Luego llegaron los <em>build servers</em></h1>
+          <h2 class='fragment'>CruiseControl, año 2001</h2>
+          <h2 class='fragment'>Cuando quieres automatizar la
+            construcción</h2>
+          <aside class='notes'>Estos "build servers" se fueron
+          extendiendo de forma natural en sistemas de integración
+          continua, con Hudson, y luego Jenkins, y finalmente sistemas
+          comerciales como Travis.
+        </section>
+
+        <section data-background='https://live.staticflickr.com/1887/44356723052_1515fcdc97_k_d.jpg'><h1>Un desvío por <strong>DevOps</strong></h1>
+          <h2 class='fragment'>Desarrollo y operaciones, juntos</h2>
+          <h2 class='fragment'>Infraestructura como código</h2>
+          <aside class='notes'>Primer DevOps Days en <a
+          href='https://devops.com/the-origins-of-devops-whats-in-a-name/'>
+            Bélgica, año 2008</a></aside>
+        </section>
+
+        <section><h1>Finalmente, integración continua</h1>
+          <h2 class='fragment'><a
+            href='https://blog.travis-ci.com/2012-12-30-2012-at-travis-ci-what-a-blast/'>Travis
+            CI</a> creado en 2012, inicialmente para Ruby</h2>
+          <img src='https://www.jessesquires.com/img/tests_pass.jpg'
+          alt='tests are passing'>
+          <aside class='notes'>Sacado de <a
+          href='https://www.jessesquires.com/blog/2016/05/22/open-source-everything/'>aquí</a>. Travis,
+            en 2021, ya no es lo que era</aside>
+        </section>
+
+        <section><!-- En la práctica -->
+          <h1>Primero: los tests</h1>
+        </section>
+
+        <section>
+          <h1>CI en 2021: Una forma de vida</h1>
+          <img src='https://i.imgflip.com/1mskui.jpg' alt='Does not
+               simply add CI to a project'>
+        </section>
+
+        <section><h1>DevOps es</h1>
+          <h1 class='fragment'><strong>Infraestructura</strong> como código</h1>
+          <h1 class='fragment'><strong>Configuración</strong> como
+            código</h1>
+          <h1 class='fragment'><strong>Tests</strong> como código</h1>
+          <aside class='notes'>Automatización y repetibilidad son lo
+          más importante. Pero también escalabilidad y poder hacer las
+            cosas rápidamente con degradación escasa de las prestaciones.</aside>
+        </section>
+
+
+          <section><h1>Aderezado con Travis.</h1>
+            <pre><code>branches:
+  except:
+    - gh-pages
+language: perl
+perl:
+  - "5.16"
+before_install:
+install: cpanm Test::More Test::Harness Git File::Slurper JSON Net::Ping TAP::Formatter::Color Term::ANSIColor
+script: prove -c</code></pre>
+        </section>
+
+        <section><h1>Prueba hasta que funcione.</h1>
+          <img src='img/travis.png' alt='imagen de travis'.>
+        </section>
+        <section><h1>Cambio fundamental: aprende mientras envías</h1>
+          <aside class='notes'>Lo que está muerto, sí se puede matar</aside>
+        </section>
+
+            <section><h1>Presentando <em>GitHub Actions</em></h1>
+              <pre><code>name: "Comprueba hitos y milestones"
+on:
+  pull_request:
+    paths:
+      - 'proyectos/hito-[1234567].md'
+      - '!objetivos/*.(md|org)'
+
+jobs:
+  obtain-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extrae URL del repositorio
+        uses: JJ/github-pr-contains-action@releases/v1
+        with:
+          github-token: ${{github.token}}
+          filesChanged: 1
+      - name: Comprueba hitos e issues
+        uses: JJ/repo-in-diff-gh-action@releases/v0
+        with:
+          github-token: ${{github.token}}
+          minMilestones: 3</code></pre>
+              <aside class='notes'>En la primera parte miramos al
+  diff; en la segunda es donde efectivamente comprobamos los
+                milestones y demás.</aside>
+            </section>
+
+            <section><h1><a
+            href='https://github.com/JJ/repo-in-diff-gh-action'>Usando</a>
+              el API de GitHub</h1>
+              <pre><code> const milestones = await github.issues.listMilestonesForRepo( { owner: user, repo: repo } )
+		    if ( ! milestones.data.length ) {
+			core.setFailed("❌ There should be at least one milestone")
+		    }
+		    const minMilestones = +core.getInput('minMilestones')
+		    if ( minMilestones && milestones.data.length < minMilestones ) {
+			core.setFailed( "❌ There should be more than " + minMilestones + " milestone(s)");
+		    }
+		    var totalIssues = 0
+		    var totalClosedIssues = 0
+		    milestones.data.forEach( async function( milestone ) {
+			totalIssues += milestone.open_issues + milestone.closed_issues
+			totalClosedIssues += milestone.closed_issues
+		    })
+		    console.log( "✅ There are " + totalIssues + "
+            issues in your milestones  and " + totalClosedIssues + "
+            closed issues ")</code></pre>
+
+              <aside class='notes'>Escritos en typescript, tienes
+              acceso a una serie de argumentos, pero lo más importante
+              es que puedes acceder fácilmente al API. Cuando empecé
+              con esto estaban en beta limitada, y la forma de
+              documentarse era a base de mirar los fuentes de las
+                actions y buscar en GitHub.</aside>
+            </section>
+
+            <section><h1><a href='https://github.com/JJ/IV-19-20/pull/895'>Comprobando</a> lo comprobable</h1>
+              <img src='img/checks-19-20.png' alt='Usando GH actions + Travis'>
+            </section>
+
+            <section><h1>Docker FTW</h1>
+              <pre><code>FROM perl:5.32-slim-threaded
+LABEL version="1.5" maintainer="JJ Merelo <jjmerelo@GMail.com>" perl5version="5.28"
+
+# Set up dir and download modules
+RUN chmod o+r /etc/resolv.conf
+RUN mkdir /test && apt-get update \
+    && apt-get install -y git curl libio-socket-ssl-perl libnet-ssleay-perl gcc  \
+    && cpanm Test::More Test::Harness Git File::Slurper JSON TAP::Formatter::Color Term::ANSIColor Mojo::UserAgent Net::Ping YAML
+RUN perl --version
+VOLUME /test
+WORKDIR /test
+
+ENTRYPOINT prove -I/usr/lib -c</jjmerelo></code></pre>
+                <aside class='notes'>El tener todos los módulos
+                instalados es un ahorro de los aproximadamente dos
+                minutos y medio que se tarda. No es una gran cosa en
+                un sistema de producción, pero en los estudiantes es
+                la diferencia entre enviar y largarse y enviar y
+                  esperar a ver qué pasa → mejora en el aprendizaje.</aside>
+            </section>
+
+            <section><h1>2020 📅  <code>github script</code> + API v4 (GraphQL)</h1>
+              <pre><code>const query = `query($owner:String!, $name:String!, $issue:Int!) {
+                            repository(name: $name , owner: $owner  ) {
+                              issue(number: $issue) {
+                                timelineItems(itemTypes: CLOSED_EVENT, last: 1) {
+                                  nodes {
+                                    ... on ClosedEvent {
+                                      closer {
+                                        __typename
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }`;</code></pre>
+            </section>
+
+          <section data-background='https://live.staticflickr.com/65535/50327948996_f2a87c2d28_k_d.jpg'><h1>Muchas gracias.</h1></section>
+        
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+     // More info about initialization & config:
+     // - https://revealjs.com/initialization/
+     // - https://revealjs.com/config/
+     Reveal.initialize({
+       hash: true,
+       width: '95%',
+       controls: true,
+       progress: true,
+       history: true,
+       autoPlayMedia: true,
+       // Learn about plugins: https://revealjs.com/plugins/
+       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+     });
+    </script>
+  </body>
+</html>
