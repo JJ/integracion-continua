@@ -224,7 +224,7 @@ script: "cd Text-Hoborg; perl Makefile.PL && make test"</code></pre>
           
           <section data-background='https://live.staticflickr.com/5141/5674661195_3382f22717_k_d.jpg'>
           <h1><strong>Docker</strong> lo ha cambiado todo</h1>
-          <pre><code data-line-numbers='1|7|8'>FROM perl:5.32-slim-threaded
+          <pre><code data-line-numbers='1|3-7|8'>FROM perl:5.32-slim-threaded
 LABEL version="1.5" maintainer="JJ Merelo &lt;jjmerelo@GMail.com>" perl5version="5.32"
 RUN chmod o+r /etc/resolv.conf \
     && mkdir /test && apt-get update \
@@ -236,8 +236,10 @@ ENTRYPOINT prove -I/usr/lib -c
           <aside class='notes'>Sacado <a
           href='https://github.com/JJ/iv-test/blob/master/Dockerfile'>de
             aquí, está hecho específicamente para ejecutar los tests
-            en Travis.</a>
-          </aside>
+            en Travis.</a>. También hace que la infraestructura sea
+          idempotente, porque se pueden usar los mismos contenedores
+          para pruebas y para despliegue. Y sobre todo se pueden
+          reproducir arquitecturas complejas en la misma fase de CI. </aside>
           </section>
 
           <section
@@ -323,9 +325,128 @@ done-testing;</code></pre>
             truth son conceptos que se usan de forma extensiva en el
               ambiente cloud de hoy</aside>
           </section>
+        </section>
 
+        <section> <!-- Arquitecturas complejas -->
+          <section><h1>Tests end-to-end requieren reproducir
+            infraestructura</h1>
+            <pre><code data-line-numbers='5,10-12|13'>language: python
+services:
+  - docker
+env:
+  - DOCKER_COMPOSE_VERSION=1.17.0
+before_install:
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - docker-compose build # ...
+            </code></pre>
+            <aside class='notes'>A continuación se ejecutan tests
+              sobre el código</aside>
+          </section>
 
+          <section
+          data-background='https://live.staticflickr.com/8580/29190896041_60dc93278c_k_d.jpg'><h1>Uso
+          de escenarios complejos de con sistemas de
+            orquestación</h1></section>
+        </section>
 
+        <section>
+        <section><h1>GitHub actions FTW!</h1>
+          <pre><code data-line-numbers='2-5|9,11-12''>name: "Comprueba los proyectos por hito"
+on:
+  pull_request:
+    paths:
+      - 'proyectos/hito-[1234567].md'
+jobs:
+  comprueba_hito_1:
+    runs-on: ubuntu-latest
+    needs: extrae_usuario_repo
+    env:
+      IV_USER: ${{ needs.extrae_usuario_repo.outputs.user }}
+      IV_REPO: ${{ needs.extrae_usuario_repo.outputs.repo }}
+    steps:
+          </code></pre>
+          <aside class='notes'>Se introdujeron en beta en 2019, y
+        ahora se usan de forma extensiva, sobre todo después de que
+            muchos otros sitios introdujeran límites para software libre.</aside>
+        </section>
+        
+        <section><h1>Descarga y ejecuta</h1>
+          <pre><code data-line-numbers='2,6-10|4,9'>      - name: Comprueba hitos en repo estudiante
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+              const user = process.env.IV_USER
+              const repo = process.env.IV_REPO
+              console.log( "» Trabajando con el repo " + repo + " para el usuario " + user )
+              const milestones = await github.issues.listMilestones( { owner: user, repo: repo } )
+          </code></pre>
+        </section>
+
+        <section><pre><code data-line-numbers='1|5-8|9-11|13,18,20|21'>ops_on_repo:
+    runs-on: ubuntu-latest
+    // ... 
+    steps:
+      - name: Descarga repo usuario y decodifica configuración
+        uses: actions/checkout@v2
+        with:
+          repository: '${{env.IV_USER}}/${{env.IV_REPO}}'
+      - name: Establece variables del repo
+        id: container
+        run: curl https://raw.githubusercontent.com/JJ/IV-20-21/master/t/get-config | perl
+      - name: Filtra hito
+        uses: dorny/paths-filter@v2
+        id: hito3
+        with:
+          filters: |
+            src:
+              - 'proyectos/hito-[34567].md'
+      - name: Testea el contenedor
+        if: steps.hito3.outputs.src == 'true'
+        run: docker run -t -v `pwd`:/test ${CONTAINER,,}</code></pre>
+
+          <aside class='notes'>Se crea un grafo de dependencias, y una
+        combinación de diferentes herramientas externas, lenguajes de
+        programación diversos, y descripciones diversas de código para
+            poder ejecutar flujos de trabajo complejos y diversos</aside>
+        </section>
+
+        <section data-background='https://live.staticflickr.com/3214/2873004432_6f7d287a45_k_d.jpg'><h1>También GitLab pipelines</h1>
+          <h1 class='fragment'>StarLark, un lenguaje para flujos de
+            trabajo</h1>
+        </section>
+
+        <section><h1>Bazel, Buck: sistemas de integración continua de
+          siguiente generación</h1>
+          <h2 class='fragment'>Con StarLark como lenguaje de
+            programación propio</h2>
+          <pre><code>def main(ctx):
+  return {
+    "kind": "pipeline",
+    "name": "build",
+    "steps": [
+      {
+        "name": "build",
+        "image": "alpine",
+        "commands": [
+            "echo hello world"
+        ]
+      }
+    ]
+  }
+          </code></pre><aside class='notes'>Sacada de <a
+          href='https://docs.drone.io/pipeline/scripting/starlark/'>la
+            documentación de Drone.io</a>
+        </section>
+
+        <section
+        data-background='img/grafo-github-actions.png'><h1 class='fragment'>Integración
+          continua → un <em>stack</em> todavía más <em>full</em></h1>
+        </section>
+        </section>
+        
         <section data-background='https://live.staticflickr.com/65535/50327948996_f2a87c2d28_k_d.jpg'><h1>Muchas gracias.</h1></section>
 
       </div>
