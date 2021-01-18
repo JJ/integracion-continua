@@ -46,7 +46,7 @@
         </section>
 
         <section
-        data-background='https://live.staticflickr.com/7357/16351457469_cae598e833_c_d.jpg'><h1>¿De
+        data-background='https://live.staticflickr.com/1879/43050141710_365e392b3e_k_d.jpg'><h1>¿De
           dónde viene?</h1>
         </section>
 
@@ -75,7 +75,11 @@ $(HTML): %.html: %.md
 	pero una herramienta muy interesante de todas formas y con
 	muchas posibilidades. make analiza un grafo de dependencias,
 	para realizar tareas de forma incremental y sólo las
-	    necesarias para llegar a los objetivos.</aside>
+	    necesarias para llegar a los objetivos. Aquí está el
+	origen también de la CI moderna, como veremos más adelante:
+	una sistematización, basada en el concepto de grafos de
+	dependencias, de la creación de los artefactos que se vayan a
+	pasar a producción.</aside>
           </section>
         </section>
 
@@ -371,7 +375,7 @@ jobs:
         ahora se usan de forma extensiva, sobre todo después de que
             muchos otros sitios introdujeran límites para software libre.</aside>
         </section>
-        
+
         <section><h1>Descarga y ejecuta</h1>
           <pre><code data-line-numbers='2,6-10|4,9'>      - name: Comprueba hitos en repo estudiante
         uses: actions/github-script@v3
@@ -387,7 +391,7 @@ jobs:
 
         <section><pre><code data-line-numbers='1|5-8|9-11|13,18,20|21'>ops_on_repo:
     runs-on: ubuntu-latest
-    // ... 
+    // ...
     steps:
       - name: Descarga repo usuario y decodifica configuración
         uses: actions/checkout@v2
@@ -460,7 +464,7 @@ jobs:
         <section><h1>Integración continua mejora todo</h1>
           <img src='img/ci-meme.jpg' class='fragment'>
         </section>
-        
+
         <section data-background='https://live.staticflickr.com/65535/50327948996_f2a87c2d28_k_d.jpg'><h1>Muchas gracias.</h1></section>
 
       </div>
